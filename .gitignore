@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.vercel/
+.sites-package-*/
+site-package.tar.gz
+*.log

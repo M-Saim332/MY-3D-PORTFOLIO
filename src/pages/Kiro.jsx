@@ -1,0 +1,6 @@
+import { motion } from 'framer-motion'
+import { Bot, Radio } from 'lucide-react'
+
+export default function Kiro() {
+  return <main className="grid min-h-[calc(100vh-100px)] place-items-center px-5 pb-20 pt-32"><motion.div initial={{opacity:0,scale:.94}} animate={{opacity:1,scale:1}} className="content-card relative w-full max-w-2xl overflow-hidden p-10 text-center md:p-20"><div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--accent-soft),transparent_55%)]"/><div className="relative"><div className="mx-auto mb-7 grid size-16 place-items-center rounded-2xl border border-accent/30 bg-accent/10 text-accent"><Bot size={28}/></div><p className="eyebrow">Kiro · Personal intelligence</p><h1 className="text-5xl font-semibold tracking-[-.06em] md:text-7xl">AI <span className="brand-gradient">Coming Soon</span></h1><p className="mx-auto mt-6 max-w-md text-muted">A portfolio assistant that will answer questions about my work, skills, and process.</p><div className="mt-9 inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-mono text-[10px] tracking-widest text-muted"><Radio size={12} className="text-green"/> DEVELOPMENT CHANNEL OPEN</div></div></motion.div></main>
+}
