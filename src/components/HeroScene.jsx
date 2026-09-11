@@ -8,7 +8,7 @@ export default function HeroScene({ profile }) {
   useEffect(() => setMissing([false, false]), [profile.frontPhoto, profile.backPhoto])
 
   return <div className="photo-card">
-    <button className={`photo-flipper ${flipped ? 'is-flipped' : ''}`} onClick={() => setFlipped(value => !value)} aria-label="Flip profile photo" aria-pressed={flipped}>
+    <button type="button" className={`photo-flipper ${flipped ? 'is-flipped' : ''}`} onClick={() => setFlipped(value => !value)} aria-label={flipped ? 'Show front profile photo' : 'Show back profile photo'} aria-pressed={flipped}>
       {[0, 1].map(index => <span key={index} className={`photo-face ${index ? 'photo-back' : ''}`}>
         {!missing[index] && photos[index] ? <img src={photos[index]} alt={`${profile.name} — ${index ? 'back' : 'front'} portrait`} onError={() => setMissing(old => old.map((value, i) => i === index ? true : value))} /> : <span className="photo-placeholder"><strong>{index ? 'Back portrait' : 'Front portrait'}</strong><small>Add this photo in your CMS dashboard</small></span>}
         <span className="photo-caption">{profile.name.toUpperCase()} <span>TAP TO FLIP ↻</span></span>
