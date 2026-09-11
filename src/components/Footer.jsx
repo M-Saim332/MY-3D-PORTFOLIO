@@ -43,9 +43,9 @@ export default function Footer() {
         <div className="utility-footer-inner">
           <span className="footer-signature"><i className="status-dot" />© 2026 {profile.name}</span>
           <div className="utility-dock" aria-label="Portfolio utilities">
-            <button className={panel === 'visitors' ? 'active' : ''} onClick={() => toggle('visitors')}><Activity size={17}/>Visitors</button>
-            <button className={panel === 'gallery' ? 'active' : ''} onClick={() => toggle('gallery')}><Images size={17}/>Gallery</button>
-            <button className={panel === 'monitor' ? 'active' : ''} onClick={() => toggle('monitor')}><Monitor size={17}/>Monitor</button>
+            <button className={panel === 'visitors' ? 'active' : ''} onClick={() => toggle('visitors')}><span><Activity size={17}/>Visitors</span></button>
+            <button className={panel === 'gallery' ? 'active' : ''} onClick={() => toggle('gallery')}><span><Images size={17}/>Gallery</span></button>
+            <button className={panel === 'monitor' ? 'active' : ''} onClick={() => toggle('monitor')}><span><Monitor size={17}/>Monitor</span></button>
           </div>
         </div>
       </footer>
