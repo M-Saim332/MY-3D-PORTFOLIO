@@ -6,7 +6,7 @@ const projectId = import.meta.env.VITE_SANITY_PROJECT_ID
 const dataset = import.meta.env.VITE_SANITY_DATASET || 'production'
 
 const query = `{
-  "profile": *[_type == "profile"][0]{firstName,lastName,name,headline,intro,about,quote,location,timezone,email,github,linkedin,leetcode,domain,"frontPhoto":frontPhoto.asset->url,"backPhoto":backPhoto.asset->url},
+  "profile": *[_type == "profile"][0]{firstName,lastName,name,headline,intro,about,quote,location,cityRegion,coordinates,timezone,gmtOffset,cgpa,cgpaLabel,cgpaStatus,semesterProgress,verifyText,chartData,traits,email,github,linkedin,leetcode,domain,"frontPhoto":frontPhoto.asset->url,"backPhoto":backPhoto.asset->url},
   "projects": *[_type == "project"] | order(order asc){"id":coalesce(number,"01"),title,category,description,stack,color,"image":image.asset->url,liveUrl,sourceUrl,featured},
   "credentials": *[_type == "credential"] | order(order asc){"number":coalesce(number,"01"),title,issuer,year,description,tags,"image":image.asset->url,verifyUrl}
 }`

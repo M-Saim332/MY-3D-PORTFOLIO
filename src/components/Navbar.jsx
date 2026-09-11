@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Bot, ChevronDown, CircuitBoard, Home, Menu, Moon, Newspaper, X } from 'lucide-react'
+import { Bot, Home, Menu, X } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { usePortfolioContent } from '../content/ContentContext'
+import ThemeSwitcher from './ThemeSwitcher'
 
 const links = [
   ['/projects', 'Projects'],
@@ -10,19 +11,9 @@ const links = [
   ['/about', 'Persona'],
 ]
 
-const themes = [
-  ['dark', Moon],
-  ['times', Newspaper],
-  ['matrix', CircuitBoard],
-  ['neural', Bot],
-]
-
 export default function Navbar({ theme, setTheme }) {
   const { profile } = usePortfolioContent()
   const [open, setOpen] = useState(false)
-  const index = Math.max(0, themes.findIndex(([name]) => name === theme))
-  const Icon = themes[index][1]
-
 
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:top-5">
@@ -36,13 +27,7 @@ export default function Navbar({ theme, setTheme }) {
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/kiro" aria-label="AI assistant" className="nav-control size-10"><Bot size={16} /></Link>
-          <div className="nav-control theme-picker gap-2 px-3">
-            <Icon size={14} aria-hidden="true" />
-            <select aria-label="Theme" value={themes[index][0]} onChange={event => setTheme(event.target.value)}>
-              {themes.map(([name]) => <option key={name} value={name}>{name.charAt(0).toUpperCase() + name.slice(1)}</option>)}
-            </select>
-            <ChevronDown className="theme-chevron" size={14} aria-hidden="true" />
-          </div>
+          <ThemeSwitcher theme={theme} setTheme={setTheme} />
           <button onClick={() => setOpen(!open)} className="nav-control size-10 md:hidden" aria-label="Toggle menu">{open ? <X size={18} /> : <Menu size={18} />}</button>
         </div>
       </div>

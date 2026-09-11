@@ -4,6 +4,8 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import SceneBackground from './components/SceneBackground'
+import GlitchOverlay from './components/GlitchOverlay'
+import HexGridBackground from './components/HexGridBackground'
 import Home from './pages/Home'
 import Projects from './pages/Projects'
 const Skills = lazy(() => import('./pages/Skills'))
@@ -24,6 +26,8 @@ export default function App() {
   return (
     <div className="portfolio-root min-h-screen text-primary">
       <div className="ambient"/><div className="grid-layer"/><div className="noise"/>
+      <HexGridBackground theme={theme} />
+      <GlitchOverlay theme={theme} />
       <Suspense fallback={null}><SceneBackground /></Suspense>
       <Navbar theme={theme} setTheme={setTheme} />
       <AnimatePresence mode="wait">
