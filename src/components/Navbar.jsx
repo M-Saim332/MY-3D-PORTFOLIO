@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bot, CircuitBoard, Home, Menu, Moon, Newspaper, X } from 'lucide-react'
+import { Bot, ChevronDown, CircuitBoard, Home, Menu, Moon, Newspaper, X } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { usePortfolioContent } from '../content/ContentContext'
 
@@ -20,9 +20,9 @@ const themes = [
 export default function Navbar({ theme, setTheme }) {
   const { profile } = usePortfolioContent()
   const [open, setOpen] = useState(false)
-  const index = themes.findIndex(([name]) => name === theme)
+  const index = Math.max(0, themes.findIndex(([name]) => name === theme))
   const Icon = themes[index][1]
-  const cycleTheme = () => setTheme(themes[(index + 1) % themes.length][0])
+
 
   return (
     <header className="fixed inset-x-0 top-3 z-50 px-3 md:top-5">
@@ -36,7 +36,13 @@ export default function Navbar({ theme, setTheme }) {
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/kiro" aria-label="AI assistant" className="nav-control size-10"><Bot size={16} /></Link>
-          <button onClick={cycleTheme} className="nav-control gap-2 px-3 font-mono text-[11px] font-semibold uppercase tracking-wider" aria-label="Change theme"><Icon size={14} /><span>{theme}</span></button>
+          <div className="nav-control theme-picker gap-2 px-3">
+            <Icon size={14} aria-hidden="true" />
+            <select aria-label="Theme" value={themes[index][0]} onChange={event => setTheme(event.target.value)}>
+              {themes.map(([name]) => <option key={name} value={name}>{name.charAt(0).toUpperCase() + name.slice(1)}</option>)}
+            </select>
+            <ChevronDown className="theme-chevron" size={14} aria-hidden="true" />
+          </div>
           <button onClick={() => setOpen(!open)} className="nav-control size-10 md:hidden" aria-label="Toggle menu">{open ? <X size={18} /> : <Menu size={18} />}</button>
         </div>
       </div>
@@ -44,3 +50,4 @@ export default function Navbar({ theme, setTheme }) {
     </header>
   )
 }
+

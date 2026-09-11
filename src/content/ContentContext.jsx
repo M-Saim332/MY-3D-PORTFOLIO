@@ -27,8 +27,8 @@ export function ContentProvider({ children }) {
 
   const value = useMemo(() => ({
     profile: { ...fallbackProfile, ...(remote?.profile || {}) },
-    projects: remote?.projects?.length ? remote.projects : fallbackProjects,
-    credentials: remote?.credentials?.length ? remote.credentials : fallbackCredentials,
+    projects: remote ? (remote.projects || []) : fallbackProjects,
+    credentials: remote ? (remote.credentials || []) : fallbackCredentials,
     cmsConnected: Boolean(remote),
   }), [remote])
 
