@@ -4,3 +4,7 @@ dist/
 .sites-package-*/
 site-package.tar.gz
 *.log
+.env
+.env.local
+studio/.env
+studio/dist/

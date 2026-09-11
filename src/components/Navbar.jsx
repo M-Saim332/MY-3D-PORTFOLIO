@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Bot, CircuitBoard, Home, Menu, Moon, Newspaper, X } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { usePortfolioContent } from '../content/ContentContext'
 
 const links = [
   ['/projects', 'Projects'],
@@ -17,6 +18,7 @@ const themes = [
 ]
 
 export default function Navbar({ theme, setTheme }) {
+  const { profile } = usePortfolioContent()
   const [open, setOpen] = useState(false)
   const index = themes.findIndex(([name]) => name === theme)
   const Icon = themes[index][1]
@@ -27,7 +29,7 @@ export default function Navbar({ theme, setTheme }) {
       <div className="nav-shell mx-auto flex h-16 max-w-[1180px] items-center justify-between rounded-full px-3 pl-4 md:px-5">
         <Link to="/" className="flex items-center gap-2.5 font-mono text-sm font-semibold italic tracking-tight">
           <span className="grid size-8 place-items-center rounded-full border border-accent/40 text-accent"><Home size={14} /></span>
-          <span className="brand-gradient hidden sm:block">muhammadsaim.me</span>
+          <span className="brand-gradient hidden sm:block">{profile.domain}</span>
         </Link>
         <nav className="hidden items-center gap-8 text-sm text-muted md:flex">
           {links.map(([to, label]) => <NavLink key={to} to={to} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>{label}</NavLink>)}

@@ -1,3 +1,22 @@
+export const profile = {
+  firstName: 'Muhammad',
+  lastName: 'Saim',
+  name: 'Muhammad Saim',
+  headline: 'Full-stack · ML · Developer',
+  intro: 'Building intelligent systems where full-stack engineering, machine learning, and thoughtful product design meet.',
+  about: 'I’m Muhammad Saim, a developer who enjoys turning difficult problems into products people can understand and use. My work moves between interfaces, APIs, data, and intelligent systems.',
+  quote: 'Build with curiosity. Finish with discipline.',
+  location: 'Pakistan',
+  timezone: 'GMT+5',
+  email: 'datascientistssaim@gmail.com',
+  github: 'https://github.com/M-Saim332/',
+  linkedin: 'https://www.linkedin.com/in/muhammad-saim-25ab12389',
+  leetcode: 'https://leetcode.com/u/de2Q2p1HeQ/',
+  domain: 'muhammadsaim.me',
+  frontPhoto: '/photos/front.jpg',
+  backPhoto: '/photos/back.jpg',
+}
+
 export const projects = [
   {
     id: '01',
