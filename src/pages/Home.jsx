@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import HeroScene from '../components/HeroScene'
 import ProjectCard from '../components/ProjectCard'
 import ContactSection from '../components/ContactSection'
+import GalaxyBackground from '../components/GalaxyBackground'
 import { usePortfolioContent } from '../content/ContentContext'
 
 const roles = ['DEVELOPER', 'BUILDER', 'ML EXPLORER', 'STUDENT']
@@ -18,7 +19,8 @@ export default function Home() {
   useEffect(() => { const timer = setInterval(() => setRole((value) => (value + 1) % roles.length), 3000); return () => clearInterval(timer) }, [])
   return (
     <>
-      <section className="mx-auto grid min-h-screen max-w-[1180px] items-center gap-12 px-5 pb-20 pt-32 lg:grid-cols-[1.12fr_.88fr]">
+      <section className="hero-galaxy-host mx-auto grid min-h-screen max-w-[1180px] items-center gap-12 px-5 pb-20 pt-32 lg:grid-cols-[1.12fr_.88fr]">
+        <GalaxyBackground particleCount={300} color="#00d9ff" reactRadius={170} />
         <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }}>
           <div className="mb-8 inline-flex rounded-full border border-line bg-surface p-1 font-mono text-[10px] font-semibold tracking-widest"><span className="rounded-full bg-primary px-3 py-1.5 text-bg">NEW</span><span className="px-3 py-1.5 text-muted">2026</span></div>
           <p className="eyebrow">{profile.headline}</p>

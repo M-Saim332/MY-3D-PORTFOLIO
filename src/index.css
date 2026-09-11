@@ -112,3 +112,36 @@
 .activity-grid i[data-level="1"],.activity-legend i[data-level="1"]{background:color-mix(in srgb,var(--activity-color) 30%,transparent)}.activity-grid i[data-level="2"],.activity-legend i[data-level="2"]{background:color-mix(in srgb,var(--activity-color) 52%,transparent)}.activity-grid i[data-level="3"],.activity-legend i[data-level="3"]{background:color-mix(in srgb,var(--activity-color) 75%,transparent)}.activity-grid i[data-level="4"],.activity-legend i[data-level="4"]{background:var(--activity-color);box-shadow:0 0 7px color-mix(in srgb,var(--activity-color) 35%,transparent)}
 .activity-legend{display:flex;justify-content:flex-end;align-items:center;gap:5px;margin-top:13px;color:var(--muted);font:9px 'JetBrains Mono',monospace}
 @media(max-width:600px){.activity-card>header,.activity-body{padding-left:17px;padding-right:17px}.activity-card>header{align-items:flex-start;flex-direction:column}.activity-body{min-height:180px}}
+
+/* ── GalaxyBackground ──────────────────────────────────────────────────────── */
+/* Wrapper bleeds to the viewport edges regardless of max-width on the section. */
+.galaxy-bg-wrap {
+  position: absolute;
+  /* bleed out past any padding/max-width on the parent section */
+  left: 50%;
+  top: 0;
+  width: 100vw;
+  height: 100%;
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none; /* clicks pass through to hero content */
+  overflow: hidden;
+}
+/* Forward pointer-events onto the canvas so pointermove fires */
+.galaxy-bg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+/* Positioning context for the host section */
+.hero-galaxy-host {
+  position: relative;
+  isolation: isolate;
+}
+/* Keep every direct child (other than the galaxy) above the canvas */
+.hero-galaxy-host > *:not(.galaxy-bg-wrap) {
+  position: relative;
+  z-index: 1;
+}
+
