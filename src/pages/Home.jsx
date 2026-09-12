@@ -84,18 +84,18 @@ export default function Home() {
           <Link to="/about" className="quiet-link">View persona <ArrowUpRight size={14} /></Link>
         </div>
 
-        <div className="grid items-start gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid items-stretch gap-4 lg:grid-cols-[0.85fr_1.15fr]">
           <LocationCard />
 
-          <div className="grid gap-4">
-            <article className="content-card p-5 sm:p-6">
-              <p className="eyebrow">/ About</p>
-              <p className="text-base leading-7 sm:text-lg sm:leading-8 text-primary">{profile.about}</p>
-              <p className="mt-3 font-serif text-sm italic text-accent">“{profile.quote}”</p>
-            </article>
+          <article className="content-card flex flex-col justify-center p-5 sm:p-6">
+            <p className="eyebrow">/ About</p>
+            <p className="text-base leading-7 sm:text-lg sm:leading-8 text-primary">{profile.about}</p>
+            <p className="mt-3 font-serif text-sm italic text-accent">“{profile.quote}”</p>
+          </article>
+        </div>
 
-            <AcademicTrendCard />
-          </div>
+        <div className="mt-4">
+          <AcademicTrendCard />
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">

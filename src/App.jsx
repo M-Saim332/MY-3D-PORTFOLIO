@@ -19,7 +19,13 @@ function Page({ children }) {
 
 export default function App() {
   const location = useLocation()
-  const [theme, setTheme] = useState(() => localStorage.getItem('portfolio-theme') || 'dark')
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('portfolio-theme') || 'dark'
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = saved
+    }
+    return saved
+  })
   useEffect(() => { document.documentElement.dataset.theme = theme; localStorage.setItem('portfolio-theme', theme) }, [theme])
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [location.pathname])
 

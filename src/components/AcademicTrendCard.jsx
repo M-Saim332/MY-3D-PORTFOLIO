@@ -1,8 +1,8 @@
 /**
  * AcademicTrendCard.jsx
  * ─────────────────────────────────────────────────────────────────────────────
- * Academic progress card plotting BOTH SPI (semester) and CPI (overall cumulative)
- * lines across S1–S4 with a two-item legend and transcript reference label.
+ * Compact academic progress card plotting BOTH SPI (semester) and CPI (overall cumulative)
+ * lines across S1–S4 in a sleek horizontal dashboard layout.
  */
 
 import { CheckCircle2 } from 'lucide-react'
@@ -26,8 +26,6 @@ export default function AcademicTrendCard() {
     { sem: 'S4', spi: 95, cpi: 86 },
   ]
 
-  // Sanity previously stored SPI only. Derive a cumulative CPI instead of
-  // copying SPI, which made both chart lines overlap exactly.
   let cumulativeSpi = 0
   const points = rawPoints.map((point, index) => {
     const spi = Number(point.spi) || 0
@@ -39,9 +37,12 @@ export default function AcademicTrendCard() {
     }
   })
 
-  const width = 180
-  const height = 50
-  const paddingX = 15
+  const highestSpi = Math.max(...points.map(p => p.spi))
+  const semAvg = (points.reduce((s, p) => s + p.spi, 0) / points.length).toFixed(1)
+
+  const width = 200
+  const height = 55
+  const paddingX = 12
   const paddingY = 8
 
   const minVal = 60
@@ -67,84 +68,81 @@ export default function AcademicTrendCard() {
   const areaPath = `M ${spiCoords[0].x},${height} L ${spiCoords.map(c => `${c.x},${c.y}`).join(' L ')} L ${spiCoords[spiCoords.length - 1].x},${height} Z`
 
   return (
-    <article className="content-card relative overflow-hidden rounded-2xl border border-line bg-surface/80 p-5 sm:p-6 backdrop-blur-md">
-      {/* Top Header & Badges */}
-      <div className="flex items-center justify-between">
-        <div>
-          {/* Optional muted transcript ref label above heading */}
-          <p className="font-mono text-[9px] font-medium tracking-wider text-muted/60 uppercase">
-            {transcriptRef}
-          </p>
-          <p className="font-mono text-[10px] font-semibold tracking-[0.16em] text-accent uppercase">
-            Learning Trajectory
-          </p>
-        </div>
+    <article className="content-card relative overflow-hidden rounded-2xl border border-line bg-surface/80 p-4 sm:p-5 backdrop-blur-md">
+      {/* Horizontal Dashboard Layout: Left Info (58%), Right Chart (42%) on desktop */}
+      <div className="grid items-center gap-4 sm:gap-6 lg:grid-cols-[1.18fr_0.82fr]">
+        
+        {/* LEFT SIDE — Academic Information */}
+        <div className="flex flex-col justify-between min-w-0">
+          {/* Header & Badges Row */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="font-mono text-[9px] font-medium tracking-wider text-muted/60 uppercase">
+                {transcriptRef}
+              </p>
+              <h3 className="font-mono text-[10px] font-semibold tracking-[0.16em] text-accent uppercase">
+                Learning Trajectory
+              </h3>
+            </div>
 
-        <div className="flex items-center gap-2 font-mono text-[9px] font-semibold">
-          <span className="inline-flex items-center gap-1 rounded-full border border-green/30 bg-green/10 px-2.5 py-0.5 text-green">
-            <CheckCircle2 size={10} /> {verifyText}
-          </span>
-          <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 text-muted">
-            {semesterProgress}
-          </span>
-        </div>
-      </div>
+            <div className="flex items-center gap-1.5 font-mono text-[9px] font-semibold">
+              <span className="inline-flex items-center gap-1 rounded-full border border-green/30 bg-green/10 px-2 py-0.5 text-green">
+                <CheckCircle2 size={10} /> {verifyText}
+              </span>
+              <span className="rounded-full border border-line bg-surface px-2 py-0.5 text-muted">
+                {semesterProgress}
+              </span>
+            </div>
+          </div>
 
-      {/* Main Content & Dual SVG Line Chart (SPI + CPI) */}
-      <div className="mt-5 grid items-stretch gap-5 sm:grid-cols-[minmax(145px,.8fr)_minmax(220px,1.4fr)]">
-        {/* Left: CGPA Score, Status & Mini-Stats */}
-        <div className="flex min-w-0 flex-col justify-between gap-4">
-          <div>
-            <div className="flex items-baseline gap-3">
-              <span className="font-display text-5xl font-bold tracking-tight text-primary">
+          {/* Main CGPA Score & Progress Description */}
+          <div className="mt-2.5">
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-primary">
                 {cgpa}
               </span>
-              <span className="font-mono text-xs font-semibold text-accent">
+              <span className="font-mono text-[10px] sm:text-xs font-semibold text-accent uppercase tracking-wider">
                 {cgpaLabel}
               </span>
             </div>
-
-            <p className="mt-4 text-xs leading-5 text-muted">
+            <p className="mt-1 text-xs leading-relaxed text-muted">
               {cgpaStatus}
             </p>
           </div>
 
-          {/* Mini-stat row: Highest SPI + Semester Average */}
-          <div className="grid grid-cols-2 gap-2 border-t border-line/60 pt-3">
-            <div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-muted/60">Highest SPI</p>
-              <p className="mt-0.5 font-mono text-sm font-semibold text-primary">
-                {Math.max(...points.map(p => p.spi))}
-              </p>
+          {/* Secondary Academic Metrics Row */}
+          <div className="mt-3 flex items-center gap-4 border-t border-line/60 pt-2 font-mono text-[10px]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted/70 uppercase tracking-wider text-[9px]">Highest SPI</span>
+              <span className="font-semibold text-primary">{highestSpi}</span>
             </div>
-            <div>
-              <p className="font-mono text-[9px] uppercase tracking-wider text-muted/60">Sem Average</p>
-              <p className="mt-0.5 font-mono text-sm font-semibold text-primary">
-                {(points.reduce((s, p) => s + p.spi, 0) / points.length).toFixed(1)}
-              </p>
+            <span className="text-line">|</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted/70 uppercase tracking-wider text-[9px]">Sem Average</span>
+              <span className="font-semibold text-primary">{semAvg}</span>
             </div>
           </div>
         </div>
 
-        {/* Right: Dual SVG Line Chart — taller for visual weight */}
-        <div className="flex min-w-0 w-full flex-col">
+        {/* RIGHT SIDE — Compact Trend Graph */}
+        <div className="flex flex-col justify-center min-w-0 w-full pt-2 sm:pt-0 border-t border-line/40 sm:border-t-0">
           <div className="relative w-full">
-            <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="block h-[190px] w-full overflow-visible sm:h-[210px]">
+            <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="block h-[72px] sm:h-[80px] w-full overflow-visible">
               <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
+                <linearGradient id="academicChartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.2" />
                   <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
                 </linearGradient>
               </defs>
 
               {/* Gradient Area Fill under SPI Line */}
-              <path d={areaPath} fill="url(#chartGradient)" />
+              <path d={areaPath} fill="url(#academicChartGradient)" />
 
-              {/* Line 1: CPI Overall Trend (Orange dashed) */}
+              {/* Line 1: CPI Overall Trend (Accent-2 dashed) */}
               <polyline
                 fill="none"
-                stroke="#ffad66"
-                strokeWidth="1.75"
+                stroke="var(--accent-2)"
+                strokeWidth="1.5"
                 strokeDasharray="3 3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -165,32 +163,34 @@ export default function AcademicTrendCard() {
 
               {/* CPI Plot Dots */}
               {cpiCoords.map(pt => (
-                <circle key={`cpi-${pt.sem}`} cx={pt.x} cy={pt.y} r="2.5" fill="#ffad66" />
+                <circle key={`cpi-${pt.sem}`} cx={pt.x} cy={pt.y} r="2" fill="var(--accent-2)" />
               ))}
 
-              {/* SPI Plot Dots — no stroke, pure accent fill */}
+              {/* SPI Plot Dots */}
               {spiCoords.map(pt => (
-                <circle key={`spi-${pt.sem}`} cx={pt.x} cy={pt.y} r="3" fill="var(--accent)" />
+                <circle key={`spi-${pt.sem}`} cx={pt.x} cy={pt.y} r="2.5" fill="var(--accent)" />
               ))}
             </svg>
 
             {/* Semester Axis Labels */}
-            <div className="mt-1 flex justify-between px-1.5 font-mono text-[9px] text-muted">
+            <div className="mt-1 flex justify-between px-1 font-mono text-[9px] text-muted">
               {spiCoords.map(c => <span key={c.sem}>{c.sem}</span>)}
             </div>
           </div>
 
-          {/* Two-Item Legend (SPI + CPI) */}
-          <div className="mt-2 flex items-center gap-3 font-mono text-[9px] text-muted">
+          {/* Legend Row */}
+          <div className="mt-1.5 flex items-center justify-end gap-3 font-mono text-[9px] text-muted">
             <span className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" /> SPI
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#ffad66]" /> CPI
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--accent-2)' }} /> CPI
             </span>
           </div>
         </div>
+
       </div>
     </article>
   )
 }
+

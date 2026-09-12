@@ -67,6 +67,8 @@ export default function GalaxyBackground({
     const ctx = canvas.getContext('2d')
     const rgb = hexToRgb(color)  // pre-parsed for cheap rgba() strings
 
+    let activeTheme = document.documentElement.dataset.theme || 'dark'
+
     // ── Environment detection ────────────────────────────────────────────────
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
                   || window.innerWidth < 768
@@ -77,8 +79,25 @@ export default function GalaxyBackground({
     let width  = 0
     let height = 0
     let rafId  = 0
-    let paused = false
+    let paused = activeTheme !== 'dark'
     let lastTime = 0
+
+    // Listen for theme changes on <html> element
+    const themeObserver = new MutationObserver(() => {
+      const current = document.documentElement.dataset.theme || 'dark'
+      if (current !== activeTheme) {
+        activeTheme = current
+        paused = activeTheme !== 'dark'
+        if (paused) {
+          if (rafId) cancelAnimationFrame(rafId)
+          rafId = 0
+          ctx.clearRect(0, 0, width, height)
+        } else if (rafId === 0) {
+          rafId = requestAnimationFrame(tick)
+        }
+      }
+    })
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 
     // Raw mouse position (updated by pointermove)
     let rawMouse = { x: -9999, y: -9999 }
@@ -355,6 +374,7 @@ export default function GalaxyBackground({
       cancelAnimationFrame(rafId)
       clearTimeout(resizeTimer)
       observer.disconnect()
+      themeObserver.disconnect()
       window.removeEventListener('resize',            onResize)
       wrap.removeEventListener('pointermove',         onPointerMove)
       wrap.removeEventListener('pointerleave',        onPointerLeave)
