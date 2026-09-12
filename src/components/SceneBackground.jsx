@@ -74,12 +74,15 @@ export default function SceneBackground() {
         ring.y += (mouse.y - ring.y) * ease
         if (cursor.current) cursor.current.style.transform = `translate3d(${ring.x}px,${ring.y}px,0)`
       }
+      if (document.documentElement.dataset.theme === 'matrix') {
+        ctx.clearRect(0, 0, width, height)
+        return
+      }
       if (document.hidden || time - last < 33) return
       last = time
       const elapsed = Math.min(50, previousDraw ? time - previousDraw : 33)
       previousDraw = time
       ctx.clearRect(0, 0, width, height)
-      if (document.documentElement.dataset.theme === 'matrix') return
       ctx.fillStyle = '#29cbe5'
       dots.forEach((point, index) => {
         point.x = (point.x + point.vx * elapsed) % 1

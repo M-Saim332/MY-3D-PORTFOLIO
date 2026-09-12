@@ -16,15 +16,25 @@ import { useEffect, useRef } from 'react'
 export default function HexGridBackground({ theme }) {
   const canvasRef = useRef(null)
 
+  console.log('[MATRIX] Component render pass. prop theme =', theme, 'dataset.theme =', typeof document !== 'undefined' ? document.documentElement.dataset.theme : 'N/A')
+
   useEffect(() => {
+    console.log('[MATRIX] useEffect triggered. theme =', theme)
     if (theme !== 'matrix') return
 
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas) {
+      console.warn('[MATRIX] canvasRef.current is null!')
+      return
+    }
     const ctx = canvas.getContext('2d', { alpha: true })
-    if (!ctx) return
+    if (!ctx) {
+      console.warn('[MATRIX] canvas context is null!')
+      return
+    }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    console.log('[MATRIX] Starting Matrix animation loop. W x H =', window.innerWidth, 'x', window.innerHeight, 'reduced =', reduced)
 
     let W = (canvas.width = window.innerWidth)
     let H = (canvas.height = window.innerHeight)
@@ -71,6 +81,26 @@ export default function HexGridBackground({ theme }) {
     const hexPool = []
     const glarePool = []
 
+    let frameCount = 0
+    let hexSpawnCount = 0
+    let redHexSpawnCount = 0
+    let whiteHexSpawnCount = 0
+    let glareSpawnCount = 0
+
+    function updateDebug() {
+      if (typeof window !== 'undefined') {
+        window.__matrixDebug = {
+          frameCount,
+          hexSpawnCount,
+          redHexSpawnCount,
+          whiteHexSpawnCount,
+          glareSpawnCount,
+          activeHexCount: hexPool.length,
+          activeGlareCount: glarePool.length,
+        }
+      }
+    }
+
     function spawnHex(customTime = now(), customProg = 0) {
       if (hexPool.length >= (mob ? 14 : 28)) return
 
@@ -81,6 +111,10 @@ export default function HexGridBackground({ theme }) {
 
       const { cx, cy } = hexCenter(col, row)
       const durationMs = 500 + Math.random() * 1000
+
+      hexSpawnCount++
+      if (white) whiteHexSpawnCount++
+      else redHexSpawnCount++
 
       hexPool.push({
         col, row, cx, cy, white,
@@ -94,6 +128,8 @@ export default function HexGridBackground({ theme }) {
 
     function spawnGlare(customTime = now(), customProg = 0) {
       if (glarePool.length >= (mob ? 6 : 14)) return
+
+      glareSpawnCount++
 
       const rand = Math.random()
       let type, baseLen, coreH, bloomH, maxCA, maxBA, hlR, durMs
@@ -162,6 +198,8 @@ export default function HexGridBackground({ theme }) {
 
     function render(currentTime) {
       const t = currentTime || now()
+      frameCount++
+      updateDebug()
 
       // Spawn ticks driven strictly by render loop
       if (t - lastHexSpawn >= nextHexDelay) {
@@ -191,11 +229,6 @@ export default function HexGridBackground({ theme }) {
           ctx.fill()
           ctx.stroke()
         }
-      }
-
-      if (reduced) {
-        animFrameId = requestAnimationFrame(render)
-        return
       }
 
       // LAYER 2: Hex glow events
@@ -368,6 +401,7 @@ export default function HexGridBackground({ theme }) {
     animFrameId = requestAnimationFrame(render)
 
     return () => {
+      console.log('[MATRIX] useEffect cleanup called for theme:', theme)
       window.removeEventListener('resize', updateSize)
       if (animFrameId) cancelAnimationFrame(animFrameId)
     }
