@@ -1,14 +1,13 @@
 /**
  * HexGridBackground.jsx — Matrix theme ONLY
  * ──────────────────────────────────────────────────────────────────────
- * Robust frame-based animation system with zero setTimeout dependency.
- * Guarantees immediate activity on fresh page loads, hard reloads, and
- * React StrictMode mount cycles.
- *
- * Activity rates:
- *   - Hex Glows : 2–5 new hex events / sec (70% red, 30% white)
- *   - White Glare: 2–5 new glare events / sec (streak + radial + glint)
- *   - Instant pre-seeding on Frame 1 (8 hexes + 6 glares pre-populated)
+ * Refined Visual Parameters:
+ *   - Primary active color: Bright Crimson Red (85–90% ratio)
+ *   - Accent color: Soft Silver-White (10–15% ratio, anti-clustering rule)
+ *   - White Hex Glow: Soft silver-white, lower border opacity (0.45–0.60), tighter bloom (glowR 12–20px)
+ *   - White Glare: Fast elegant reflections (65% small, 30% medium, 5% large), lower bloom opacity
+ *   - Positional Bias: Softly dampens white intensity over central hero text area for crystal-clear readability
+ *   - Frame-driven pure RAF architecture preserved with 100% cross-browser reliability
  */
 
 import { useEffect, useRef } from 'react'
@@ -16,25 +15,13 @@ import { useEffect, useRef } from 'react'
 export default function HexGridBackground({ theme }) {
   const canvasRef = useRef(null)
 
-  console.log('[MATRIX] Component render pass. prop theme =', theme, 'dataset.theme =', typeof document !== 'undefined' ? document.documentElement.dataset.theme : 'N/A')
-
   useEffect(() => {
-    console.log('[MATRIX] useEffect triggered. theme =', theme)
     if (theme !== 'matrix') return
 
     const canvas = canvasRef.current
-    if (!canvas) {
-      console.warn('[MATRIX] canvasRef.current is null!')
-      return
-    }
+    if (!canvas) return
     const ctx = canvas.getContext('2d', { alpha: true })
-    if (!ctx) {
-      console.warn('[MATRIX] canvas context is null!')
-      return
-    }
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    console.log('[MATRIX] Starting Matrix animation loop. W x H =', window.innerWidth, 'x', window.innerHeight, 'reduced =', reduced)
+    if (!ctx) return
 
     let W = (canvas.width = window.innerWidth)
     let H = (canvas.height = window.innerHeight)
@@ -102,15 +89,27 @@ export default function HexGridBackground({ theme }) {
     }
 
     function spawnHex(customTime = now(), customProg = 0) {
-      if (hexPool.length >= (mob ? 14 : 28)) return
+      if (hexPool.length >= (mob ? 12 : 24)) return
 
-      const white = Math.random() < 0.30
+      let white = Math.random() < 0.12 // 12% white, 88% red
       const col = 1 + Math.floor(Math.random() * Math.max(1, cols - 2))
       const row = 1 + Math.floor(Math.random() * Math.max(1, rows - 2))
       if (hexPool.some(h => h.col === col && h.row === row)) return
 
       const { cx, cy } = hexCenter(col, row)
-      const durationMs = 500 + Math.random() * 1000
+
+      // Anti-clustering check: If another active white hex is nearby, convert to red
+      if (white) {
+        const nearWhite = hexPool.some(h => h.white && Math.hypot(h.cx - cx, h.cy - cy) < hexW * 3.5)
+        if (nearWhite) white = false
+      }
+
+      // Soft hero text dampening (if in central text area, reduce white frequency)
+      if (white && cx > W * 0.12 && cx < W * 0.55 && cy > H * 0.18 && cy < H * 0.65) {
+        if (Math.random() < 0.65) white = false
+      }
+
+      const durationMs = 600 + Math.random() * 900
 
       hexSpawnCount++
       if (white) whiteHexSpawnCount++
@@ -120,71 +119,80 @@ export default function HexGridBackground({ theme }) {
         col, row, cx, cy, white,
         startTime: customTime - customProg * durationMs,
         durationMs,
-        maxBorder: white ? 1.0 : (0.85 + Math.random() * 0.15),
-        maxFill: white ? 0.25 : (0.12 + Math.random() * 0.12),
-        glowR: white ? (28 + Math.random() * 18) : (20 + Math.random() * 20),
+        maxBorder: white ? (0.45 + Math.random() * 0.15) : (0.85 + Math.random() * 0.15),
+        maxFill: white ? (0.10 + Math.random() * 0.04) : (0.12 + Math.random() * 0.12),
+        glowR: white ? (12 + Math.random() * 8) : (20 + Math.random() * 20),
       })
     }
 
     function spawnGlare(customTime = now(), customProg = 0) {
-      if (glarePool.length >= (mob ? 6 : 14)) return
+      if (glarePool.length >= (mob ? 5 : 12)) return
 
       glareSpawnCount++
 
       const rand = Math.random()
       let type, baseLen, coreH, bloomH, maxCA, maxBA, hlR, durMs
 
-      if (rand < 0.50) {
+      if (rand < 0.65) {
         type = 'small'
-        baseLen = 90 + Math.random() * 90
+        baseLen = 70 + Math.random() * 70
+        coreH = 4 + Math.random() * 2
+        bloomH = 14 + Math.random() * 8
+        maxCA = 0.70 + Math.random() * 0.10
+        maxBA = 0.20 + Math.random() * 0.08
+        hlR = 75
+        durMs = 450 + Math.random() * 350
+      } else if (rand < 0.95) {
+        type = 'medium'
+        baseLen = 140 + Math.random() * 80
         coreH = 6 + Math.random() * 3
         bloomH = 22 + Math.random() * 10
-        maxCA = 0.90 + Math.random() * 0.10
-        maxBA = 0.40 + Math.random() * 0.15
-        hlR = 100
-        durMs = 500 + Math.random() * 500
-      } else if (rand < 0.88) {
-        type = 'medium'
-        baseLen = 180 + Math.random() * 140
-        coreH = 9 + Math.random() * 4
-        bloomH = 32 + Math.random() * 14
-        maxCA = 0.92 + Math.random() * 0.08
-        maxBA = 0.42 + Math.random() * 0.15
-        hlR = 160
-        durMs = 700 + Math.random() * 500
+        maxCA = 0.75 + Math.random() * 0.10
+        maxBA = 0.24 + Math.random() * 0.08
+        hlR = 120
+        durMs = 650 + Math.random() * 350
       } else {
         if (glarePool.some(g => g.type === 'large')) return
         type = 'large'
-        baseLen = 340 + Math.random() * 200
-        coreH = 14 + Math.random() * 5
-        bloomH = 48 + Math.random() * 18
-        maxCA = 0.95 + Math.random() * 0.05
-        maxBA = 0.46 + Math.random() * 0.12
-        hlR = 240
-        durMs = 900 + Math.random() * 400
+        baseLen = 240 + Math.random() * 90
+        coreH = 9 + Math.random() * 3
+        bloomH = 30 + Math.random() * 10
+        maxCA = 0.80 + Math.random() * 0.08
+        maxBA = 0.28 + Math.random() * 0.07
+        hlR = 170
+        durMs = 850 + Math.random() * 300
+      }
+
+      const startX = W * (0.04 + Math.random() * 0.92)
+      const startY = H * (0.04 + Math.random() * 0.92)
+
+      // Hero text protection dampening: If near text, reduce max bloom slightly
+      let textDamp = 1.0
+      if (startX > W * 0.12 && startX < W * 0.55 && startY > H * 0.18 && startY < H * 0.65) {
+        textDamp = 0.72
       }
 
       const dir = Math.random() > 0.5 ? 1 : -1
-      const drift = (25 + Math.random() * 55) * dir
-      const hasGlint = Math.random() < 0.35
+      const drift = (25 + Math.random() * 45) * dir
+      const hasGlint = Math.random() < 0.25
 
       glarePool.push({
-        type,
-        startX: W * (0.04 + Math.random() * 0.92),
-        startY: H * (0.04 + Math.random() * 0.92),
+        type, startX, startY,
         drift, baseLen, coreH, bloomH,
-        maxCA, maxBA, hlR, hasGlint,
+        maxCA: maxCA * textDamp,
+        maxBA: maxBA * textDamp,
+        hlR, hasGlint,
         startTime: customTime - customProg * durMs,
         durationMs: durMs,
       })
     }
 
-    // Pre-seed Frame 1 with ongoing events
+    // Pre-seed Frame 1 with balanced activity (4 red, 1 white hex + 4 glares)
     const bootTime = now()
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 5; i++) {
       spawnHex(bootTime, Math.random() * 0.8)
     }
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 4; i++) {
       spawnGlare(bootTime, Math.random() * 0.8)
     }
 
@@ -203,17 +211,17 @@ export default function HexGridBackground({ theme }) {
 
       // Spawn ticks driven strictly by render loop
       if (t - lastHexSpawn >= nextHexDelay) {
-        const count = mob ? (1 + Math.floor(Math.random() * 2)) : (2 + Math.floor(Math.random() * 3))
+        const count = mob ? 1 : (2 + Math.floor(Math.random() * 2))
         for (let i = 0; i < count; i++) spawnHex(t, 0)
         lastHexSpawn = t
-        nextHexDelay = 140 + Math.random() * 140
+        nextHexDelay = 150 + Math.random() * 150
       }
 
       if (t - lastGlareSpawn >= nextGlareDelay) {
-        const count = mob ? 1 : (1 + Math.floor(Math.random() * 3))
+        const count = mob ? 1 : (1 + Math.floor(Math.random() * 2))
         for (let i = 0; i < count; i++) spawnGlare(t, 0)
         lastGlareSpawn = t
-        nextGlareDelay = 170 + Math.random() * 160
+        nextGlareDelay = 180 + Math.random() * 160
       }
 
       ctx.clearRect(0, 0, W, H)
@@ -244,30 +252,30 @@ export default function HexGridBackground({ theme }) {
         const gR = Math.max(1, h.glowR * a)
 
         if (h.white) {
-          // White hex glow
+          // Soft silver-white accent hex glow (refined, elegant)
           hexPath(h.cx, h.cy, hexR)
-          ctx.fillStyle = `rgba(255,255,255,${fA})`
+          ctx.fillStyle = `rgba(240,244,255,${fA})`
           ctx.fill()
 
           ctx.save()
-          ctx.shadowColor = '#ffffff'
-          ctx.shadowBlur = gR * 2.0
-          ctx.strokeStyle = `rgba(255,255,255,${bA})`
-          ctx.lineWidth = 2.0 + a * 1.8
+          ctx.shadowColor = 'rgba(230,238,255,0.7)'
+          ctx.shadowBlur = gR * 1.0
+          ctx.strokeStyle = `rgba(240,244,255,${bA})`
+          ctx.lineWidth = 1.4 + a * 1.2
           hexPath(h.cx, h.cy, hexR)
           ctx.stroke()
           ctx.restore()
 
           ctx.save()
-          ctx.shadowColor = 'rgba(255,255,255,0.6)'
-          ctx.shadowBlur = gR * 3.5
-          ctx.strokeStyle = `rgba(255,255,255,${bA * 0.5})`
-          ctx.lineWidth = 4
-          hexPath(h.cx, h.cy, hexR + 4)
+          ctx.shadowColor = 'rgba(220,230,250,0.35)'
+          ctx.shadowBlur = gR * 1.8
+          ctx.strokeStyle = `rgba(230,238,255,${bA * 0.4})`
+          ctx.lineWidth = 2.5
+          hexPath(h.cx, h.cy, hexR + 3)
           ctx.stroke()
           ctx.restore()
         } else {
-          // Red hex glow
+          // Primary Crimson Red hex glow
           hexPath(h.cx, h.cy, hexR)
           ctx.fillStyle = `rgba(255,35,75,${fA})`
           ctx.fill()
@@ -311,42 +319,40 @@ export default function HexGridBackground({ theme }) {
 
         ctx.save()
 
+        // Soft bloom layer
         const bgrd = ctx.createLinearGradient(cx - len / 2, cy, cx + len / 2, cy)
         bgrd.addColorStop(0, 'rgba(255,255,255,0)')
-        bgrd.addColorStop(0.15, `rgba(255,255,255,${bA * 0.28})`)
-        bgrd.addColorStop(0.35, `rgba(255,255,255,${bA * 0.72})`)
+        bgrd.addColorStop(0.20, `rgba(255,255,255,${bA * 0.25})`)
         bgrd.addColorStop(0.5, `rgba(255,255,255,${bA})`)
-        bgrd.addColorStop(0.65, `rgba(255,255,255,${bA * 0.72})`)
-        bgrd.addColorStop(0.85, `rgba(255,255,255,${bA * 0.28})`)
+        bgrd.addColorStop(0.80, `rgba(255,255,255,${bA * 0.25})`)
         bgrd.addColorStop(1, 'rgba(255,255,255,0)')
 
         ctx.shadowColor = '#ffffff'
-        ctx.shadowBlur = 28 * aF
+        ctx.shadowBlur = 18 * aF
         ctx.fillStyle = bgrd
         ctx.beginPath()
         ctx.ellipse(cx, cy, len / 2, bloomH / 2, 0, 0, Math.PI * 2)
         ctx.fill()
 
+        // Crisp core streak
         const cgrd = ctx.createLinearGradient(cx - len / 2, cy, cx + len / 2, cy)
         cgrd.addColorStop(0, 'rgba(255,255,255,0)')
-        cgrd.addColorStop(0.12, `rgba(255,255,255,${cA * 0.30})`)
-        cgrd.addColorStop(0.32, `rgba(255,255,255,${cA * 0.85})`)
+        cgrd.addColorStop(0.15, `rgba(255,255,255,${cA * 0.30})`)
         cgrd.addColorStop(0.5, `rgba(255,255,255,${cA})`)
-        cgrd.addColorStop(0.68, `rgba(255,255,255,${cA * 0.85})`)
-        cgrd.addColorStop(0.88, `rgba(255,255,255,${cA * 0.30})`)
+        cgrd.addColorStop(0.85, `rgba(255,255,255,${cA * 0.30})`)
         cgrd.addColorStop(1, 'rgba(255,255,255,0)')
 
         ctx.shadowColor = '#ffffff'
-        ctx.shadowBlur = 14 * aF
+        ctx.shadowBlur = 10 * aF
         ctx.fillStyle = cgrd
         ctx.beginPath()
         ctx.ellipse(cx, cy, len / 2, coreH / 2, 0, 0, Math.PI * 2)
         ctx.fill()
 
-        const starR = Math.max(1, coreH * 3)
+        const starR = Math.max(1, coreH * 2.2)
         const sgrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, starR)
         sgrd.addColorStop(0, '#ffffff')
-        sgrd.addColorStop(0.4, `rgba(255,255,255,${cA})`)
+        sgrd.addColorStop(0.5, `rgba(255,255,255,${cA * 0.8})`)
         sgrd.addColorStop(1, 'rgba(255,255,255,0)')
         ctx.fillStyle = sgrd
         ctx.beginPath()
@@ -354,11 +360,11 @@ export default function HexGridBackground({ theme }) {
         ctx.fill()
 
         if (g.hasGlint) {
-          const vl = Math.min(len * 0.24, 30)
-          ctx.strokeStyle = `rgba(255,255,255,${cA * 0.88})`
-          ctx.lineWidth = 2
+          const vl = Math.min(len * 0.20, 24)
+          ctx.strokeStyle = `rgba(255,255,255,${cA * 0.80})`
+          ctx.lineWidth = 1.5
           ctx.shadowColor = '#ffffff'
-          ctx.shadowBlur = 12 * aF
+          ctx.shadowBlur = 8 * aF
           ctx.beginPath()
           ctx.moveTo(cx, cy - vl)
           ctx.lineTo(cx, cy + vl)
@@ -378,15 +384,15 @@ export default function HexGridBackground({ theme }) {
             const d = Math.hypot(hx - cx, hy - cy)
             if (d < g.hlR) {
               const pf = (1 - d / g.hlR) * aF
-              if (pf > 0.08) {
+              if (pf > 0.10) {
                 hexPath(hx, hy, hexR)
                 ctx.save()
-                ctx.fillStyle = `rgba(255,255,255,${pf * 0.15})`
+                ctx.fillStyle = `rgba(255,255,255,${pf * 0.08})`
                 ctx.fill()
-                ctx.strokeStyle = `rgba(255,255,255,${pf * 0.90})`
-                ctx.lineWidth = 1.2 + pf * 1.4
+                ctx.strokeStyle = `rgba(255,255,255,${pf * 0.60})`
+                ctx.lineWidth = 1.0 + pf * 1.0
                 ctx.shadowColor = '#ffffff'
-                ctx.shadowBlur = 9 * pf
+                ctx.shadowBlur = 6 * pf
                 ctx.stroke()
                 ctx.restore()
               }
@@ -401,7 +407,6 @@ export default function HexGridBackground({ theme }) {
     animFrameId = requestAnimationFrame(render)
 
     return () => {
-      console.log('[MATRIX] useEffect cleanup called for theme:', theme)
       window.removeEventListener('resize', updateSize)
       if (animFrameId) cancelAnimationFrame(animFrameId)
     }

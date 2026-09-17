@@ -84,19 +84,40 @@ export default function SceneBackground() {
       previousDraw = time
       ctx.clearRect(0, 0, width, height)
       ctx.fillStyle = '#29cbe5'
+
+      // Collect nearby particles for cursor connection network (Max 6 closest)
+      const MAX_CURSOR_CONNECTIONS = 6
+      const CONNECTION_RADIUS = 180
+      const nearbyDots = []
+
       dots.forEach((point, index) => {
         point.x = (point.x + point.vx * elapsed) % 1
         point.y = (point.y + point.vy * elapsed + 1) % 1
         const x = point.x * width
         const y = point.y * height
+
+        let distance = 9999
+
+        if (mouseActive && mouse.x > 0) {
+          distance = Math.hypot(x - mouse.x, y - mouse.y)
+          if (distance < CONNECTION_RADIUS) {
+            nearbyDots.push({ x, y, distance, point, index })
+          }
+        }
+
         const twinkle = .18 + (Math.sin(time * .0011 + point.phase) + 1) * .09
-        ctx.globalAlpha = twinkle
+        const isNear = distance < CONNECTION_RADIUS
+        const alphaBoost = isNear ? (1 - distance / CONNECTION_RADIUS) * 0.50 : 0
+        const radiusBoost = isNear ? (1 - distance / CONNECTION_RADIUS) * 0.8 : 0
+
+        ctx.globalAlpha = Math.min(1, twinkle + alphaBoost)
         ctx.beginPath()
-        ctx.arc(x, y, point.r, 0, Math.PI * 2)
+        ctx.arc(x, y, point.r + radiusBoost, 0, Math.PI * 2)
         ctx.fill()
-        if (index % 17 === 0) {
+
+        if (index % 17 === 0 || isNear) {
           ctx.strokeStyle = '#8eeeff'
-          ctx.globalAlpha = twinkle * .7
+          ctx.globalAlpha = Math.min(1, (twinkle + alphaBoost) * (isNear ? 0.9 : 0.7))
           ctx.lineWidth = .65
           ctx.beginPath()
           ctx.moveTo(x - 4, y)
@@ -105,16 +126,37 @@ export default function SceneBackground() {
           ctx.lineTo(x, y + 4)
           ctx.stroke()
         }
-        const distance = Math.hypot(x - mouse.x, y - mouse.y)
-        if (distance < 140 && !reduced) {
-          ctx.strokeStyle = '#24cde9'
-          ctx.globalAlpha = (1 - distance / 140) * .28
+      })
+
+      // Draw Cursor ↔ Nearby Particle Connection Network
+      if (mouseActive && mouse.x > 0 && nearbyDots.length > 0) {
+        nearbyDots.sort((a, b) => a.distance - b.distance)
+        const closest = nearbyDots.slice(0, MAX_CURSOR_CONNECTIONS)
+
+        closest.forEach(p => {
+          const strength = (1 - p.distance / CONNECTION_RADIUS)
+          const lineAlpha = 0.12 + strength * 0.55
+          ctx.strokeStyle = `rgba(0, 217, 255, ${lineAlpha})`
+          ctx.lineWidth = 0.9
+          ctx.globalAlpha = 1
           ctx.beginPath()
-          ctx.moveTo(x, y)
+          ctx.moveTo(p.x, p.y)
           ctx.lineTo(mouse.x, mouse.y)
           ctx.stroke()
-        }
-      })
+        })
+
+        // Cursor temporary network node glow
+        const nodeGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 24)
+        nodeGlow.addColorStop(0, 'rgba(0, 217, 255, 0.35)')
+        nodeGlow.addColorStop(0.5, 'rgba(0, 217, 255, 0.12)')
+        nodeGlow.addColorStop(1, 'rgba(0, 217, 255, 0)')
+        ctx.globalAlpha = 1
+        ctx.fillStyle = nodeGlow
+        ctx.beginPath()
+        ctx.arc(mouse.x, mouse.y, 24, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
       const galaxyX = width > 900 ? width * .51 : width * .5
       const galaxyY = height * .5
       const galaxyRadius = Math.min(width > 900 ? 230 : 150, width * .28)
@@ -175,12 +217,14 @@ export default function SceneBackground() {
     frame = requestAnimationFrame(draw)
     addEventListener('resize', resize)
     addEventListener('pointermove', move)
+    addEventListener('mousemove', move)
     document.addEventListener('mouseleave', leave)
 
     return () => {
       cancelAnimationFrame(frame)
       removeEventListener('resize', resize)
       removeEventListener('pointermove', move)
+      removeEventListener('mousemove', move)
       document.removeEventListener('mouseleave', leave)
       document.documentElement.classList.remove('custom-cursor-active')
     }

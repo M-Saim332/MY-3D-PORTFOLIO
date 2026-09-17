@@ -162,9 +162,11 @@ export default function GalaxyBackground({
     }
 
     // ── Pointer tracking ──────────────────────────────────────────────────────
+    // IMPORTANT: listener is on `window`, NOT `wrap`.
+    // The canvas is entirely covered by z-index:1 hero content, so wrap/canvas
+    // never receives pointer events directly. Window-level listener gets every
+    // pointer move regardless of what element is on top.
     function onPointerMove(e) {
-      // Skip touch on mobile — we disable physics there anyway but this also
-      // prevents the nebula glow jumping during touch-scroll
       if (isMobile && e.pointerType === 'touch') return
       const rect = wrap.getBoundingClientRect()
       rawMouse.x = e.clientX - rect.left
@@ -266,14 +268,14 @@ export default function GalaxyBackground({
         const hx = s.ox * width
         const hy = s.oy * height
 
-        if (!isMobile && !reduced && rawMouse.x > -9000) {
+        if (rawMouse.x > -9000) {
           const tox   = hx - rawMouse.x
           const toy   = hy - rawMouse.y
           const dist2 = tox * tox + toy * toy
 
           if (dist2 < r2 && dist2 > 0.001) {
             const dist     = Math.sqrt(dist2)
-            const strength = (1 - dist / reactRadius) * reactRadius * 0.18
+            const strength = (1 - dist / reactRadius) * reactRadius * 0.06
             s.dx += (tox / dist) * strength
             s.dy += (toy / dist) * strength
           }
@@ -290,8 +292,9 @@ export default function GalaxyBackground({
       // ── 4. Constellation lines ───────────────────────────────────────────
       //    Drawn between pairs of "near" stars that are also close to each
       //    other. Alpha fades with inter-star distance for a natural look.
-      if (!isMobile && !reduced && rawMouse.x > -9000) {
-        const lineZone  = reactRadius * 1.25
+      if (rawMouse.x > -9000) {
+        const CONNECTION_RADIUS = 180   // px — cursor→star connection range
+        const lineZone  = CONNECTION_RADIUS
         const lineZone2 = lineZone * lineZone
         const maxLink   = 90   // max px gap between two stars to link them
 
@@ -302,6 +305,8 @@ export default function GalaxyBackground({
           return dx * dx + dy * dy < lineZone2
         })
 
+        // Star–star constellation lines between nearby stars
+        ctx.globalAlpha = 1
         ctx.lineWidth = 0.65
         for (let i = 0; i < near.length; i++) {
           for (let j = i + 1; j < near.length; j++) {
@@ -319,6 +324,32 @@ export default function GalaxyBackground({
             ctx.stroke()
           }
         }
+
+        // Direct Cursor ↔ Star Connection Network (nearest 5)
+        const MAX_STAR_CONNECTIONS = 5
+        const cursorNear = near
+          .map(s => {
+            const dx = s.x - rawMouse.x
+            const dy = s.y - rawMouse.y
+            return { s, dist: Math.sqrt(dx * dx + dy * dy) }
+          })
+          .sort((a, b) => a.dist - b.dist)
+          .slice(0, MAX_STAR_CONNECTIONS)
+
+        ctx.globalAlpha = 1
+        ctx.lineWidth = 1.0
+        cursorNear.forEach(({ s, dist }) => {
+          const strength  = 1 - dist / CONNECTION_RADIUS
+          // Visible at close range (0.67), subtle at the edge (0.12)
+          const lineAlpha = 0.12 + strength * 0.55
+          ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${lineAlpha})`
+          ctx.globalAlpha = 1
+          ctx.beginPath()
+          ctx.moveTo(s.x, s.y)
+          ctx.lineTo(rawMouse.x, rawMouse.y)
+          ctx.stroke()
+        })
+        ctx.globalAlpha = 1
       }
 
       // ── 5. Draw stars ────────────────────────────────────────────────────
@@ -328,7 +359,7 @@ export default function GalaxyBackground({
 
         // Proximity boost: brighter + slightly larger when near cursor
         let boost = 0
-        if (!isMobile && !reduced && rawMouse.x > -9000) {
+        if (rawMouse.x > -9000) {
           const dx = s.x - rawMouse.x
           const dy = s.y - rawMouse.y
           const d2 = dx * dx + dy * dy
@@ -364,10 +395,13 @@ export default function GalaxyBackground({
     lastTime = performance.now()
     rafId = requestAnimationFrame(tick)
 
+    // Use window-level listeners so pointer events are received even when the
+    // galaxy canvas is covered by z-index:1 hero content.
     window.addEventListener('resize',             onResize,          { passive: true })
-    wrap.addEventListener('pointermove',           onPointerMove,     { passive: true })
-    wrap.addEventListener('pointerleave',          onPointerLeave,    { passive: true })
-    document.addEventListener('visibilitychange',  onVisibilityChange)
+    window.addEventListener('pointermove',        onPointerMove,     { passive: true })
+    window.addEventListener('mousemove',          onPointerMove,     { passive: true })
+    document.addEventListener('mouseleave',       onPointerLeave)
+    document.addEventListener('visibilitychange', onVisibilityChange)
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
@@ -376,8 +410,9 @@ export default function GalaxyBackground({
       observer.disconnect()
       themeObserver.disconnect()
       window.removeEventListener('resize',            onResize)
-      wrap.removeEventListener('pointermove',         onPointerMove)
-      wrap.removeEventListener('pointerleave',        onPointerLeave)
+      window.removeEventListener('pointermove',       onPointerMove)
+      window.removeEventListener('mousemove',         onPointerMove)
+      document.removeEventListener('mouseleave',      onPointerLeave)
       document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   // Re-run if any prop changes
