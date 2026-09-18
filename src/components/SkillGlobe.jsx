@@ -1,6 +1,6 @@
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import {
   SiPython, SiJavascript, SiTypescript, SiCplusplus, SiMysql,
   SiReact, SiNextdotjs, SiNodedotjs, SiFastapi, SiTailwindcss,
@@ -72,8 +72,6 @@ export function getSkillColor(skill, idx) {
 
 // ─── Inner Globe (Three.js scene) ───────────────────────────────────────────
 function Globe({ skills }) {
-  const group = useRef()
-
   const nodes = useMemo(() =>
     skills.map((skill, index) => {
       const phi   = Math.acos(-1 + (2 * index) / Math.max(skills.length - 1, 1))
@@ -92,16 +90,8 @@ function Globe({ skills }) {
       }
     }), [skills])
 
-  // Auto-rotate — user drag via OrbitControls overrides naturally
-  useFrame((_, delta) => {
-    if (group.current) {
-      group.current.rotation.y += delta * 0.28
-      group.current.rotation.x += delta * 0.06
-    }
-  })
-
   return (
-    <group ref={group}>
+    <group>
       {/* Wireframe sphere */}
       <mesh>
         <sphereGeometry args={[1.72, 28, 28]} />
@@ -155,6 +145,8 @@ export default function SkillGlobe({ skills }) {
           rotateSpeed={0.55}
           enableDamping
           dampingFactor={0.08}
+          autoRotate
+          autoRotateSpeed={1.4}
         />
       </Canvas>
     </div>
