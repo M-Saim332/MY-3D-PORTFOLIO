@@ -5,8 +5,8 @@ import {
   SiPython, SiJavascript, SiTypescript, SiCplusplus, SiMysql,
   SiReact, SiNextdotjs, SiNodedotjs, SiFastapi, SiTailwindcss,
   SiTensorflow, SiHuggingface, SiLangchain, SiGit, SiGithub,
-  SiDocker, SiPostgresql, SiRedis, SiJupyter, SiMicrosoftpowerpoint,
-  SiPostman, SiVercel, SiXgboost,
+  SiDocker, SiPostgresql, SiRedis, SiJupyter,
+  SiPostman, SiVercel,
 } from 'react-icons/si'
 import { FaBrain, FaNetworkWired } from 'react-icons/fa'
 import { BsBarChartFill } from 'react-icons/bs'
@@ -46,7 +46,7 @@ export const SKILL_META = {
   PostgreSQL:        { color: '#336791', Icon: SiPostgresql },
   Redis:             { color: '#dc382d', Icon: SiRedis },
   Jupyter:           { color: '#f37626', Icon: SiJupyter },
-  'Power BI':        { color: '#f2c811', Icon: SiMicrosoftpowerpoint },
+  'Power BI':        { color: '#f2c811', Icon: BsBarChartFill },
   Postman:           { color: '#ef5b25', Icon: SiPostman },
   Vercel:            { color: '#e2e8f0', Icon: SiVercel },
 
