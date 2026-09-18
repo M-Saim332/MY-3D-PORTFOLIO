@@ -1,5 +1,14 @@
 import { useEffect, useRef } from 'react'
 
+function hexToRgb(hex) {
+  if (!hex || typeof hex !== 'string') return { r: 0, g: 217, b: 255 }
+  const clean = hex.trim().replace('#', '')
+  const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean
+  const int = parseInt(full, 16)
+  if (isNaN(int)) return { r: 0, g: 217, b: 255 }
+  return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 }
+}
+
 export default function SceneBackground() {
   const canvas = useRef(null)
   const cursor = useRef(null)
@@ -83,7 +92,11 @@ export default function SceneBackground() {
       const elapsed = Math.min(50, previousDraw ? time - previousDraw : 33)
       previousDraw = time
       ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = '#29cbe5'
+
+      const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#00d9ff'
+      const { r, g, b } = hexToRgb(accentHex)
+
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
 
       // Collect nearby particles for cursor connection network (Max 6 closest)
       const MAX_CURSOR_CONNECTIONS = 6
@@ -116,7 +129,7 @@ export default function SceneBackground() {
         ctx.fill()
 
         if (index % 17 === 0 || isNear) {
-          ctx.strokeStyle = '#8eeeff'
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.8)`
           ctx.globalAlpha = Math.min(1, (twinkle + alphaBoost) * (isNear ? 0.9 : 0.7))
           ctx.lineWidth = .65
           ctx.beginPath()
@@ -136,7 +149,7 @@ export default function SceneBackground() {
         closest.forEach(p => {
           const strength = (1 - p.distance / CONNECTION_RADIUS)
           const lineAlpha = 0.12 + strength * 0.55
-          ctx.strokeStyle = `rgba(0, 217, 255, ${lineAlpha})`
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${lineAlpha})`
           ctx.lineWidth = 0.9
           ctx.globalAlpha = 1
           ctx.beginPath()
@@ -147,9 +160,9 @@ export default function SceneBackground() {
 
         // Cursor temporary network node glow
         const nodeGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 24)
-        nodeGlow.addColorStop(0, 'rgba(0, 217, 255, 0.35)')
-        nodeGlow.addColorStop(0.5, 'rgba(0, 217, 255, 0.12)')
-        nodeGlow.addColorStop(1, 'rgba(0, 217, 255, 0)')
+        nodeGlow.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.35)`)
+        nodeGlow.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, 0.12)`)
+        nodeGlow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`)
         ctx.globalAlpha = 1
         ctx.fillStyle = nodeGlow
         ctx.beginPath()
@@ -161,14 +174,14 @@ export default function SceneBackground() {
       const galaxyY = height * .5
       const galaxyRadius = Math.min(width > 900 ? 230 : 150, width * .28)
       const glow = ctx.createRadialGradient(galaxyX, galaxyY, 0, galaxyX, galaxyY, galaxyRadius * .42)
-        glow.addColorStop(0, 'rgba(0,217,255,.14)')
-        glow.addColorStop(1, 'rgba(0,217,255,0)')
+        glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.14)`)
+        glow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`)
       ctx.globalAlpha = 1
       ctx.fillStyle = glow
       ctx.beginPath()
       ctx.arc(galaxyX, galaxyY, galaxyRadius * .42, 0, Math.PI * 2)
       ctx.fill()
-      ctx.fillStyle = '#3ddcf2'
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
       galaxy.forEach((star, index) => {
         const radius = 8 + Math.pow(star.progress, .72) * galaxyRadius
         const rotation = time * star.speed
@@ -194,9 +207,9 @@ export default function SceneBackground() {
           const tailX = x - shootingStar.length
           const tailY = y - shootingStar.length * .24
           const trail = ctx.createLinearGradient(tailX, tailY, x, y)
-          trail.addColorStop(0, 'rgba(0,217,255,0)')
-          trail.addColorStop(.72, 'rgba(90,230,255,.18)')
-          trail.addColorStop(1, 'rgba(220,252,255,.95)')
+          trail.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0)`)
+          trail.addColorStop(.72, `rgba(${r}, ${g}, ${b}, 0.25)`)
+          trail.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.95)`)
           ctx.globalAlpha = Math.sin(progress * Math.PI)
           ctx.strokeStyle = trail
           ctx.lineWidth = 1.5
